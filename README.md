@@ -5,25 +5,25 @@ of opening the reader, calling the ICAO reading API, and then closing the sensor
 
 ```java
 ePassportOpenCommand(new EpassportReaderStatusListener() {
-  @Override
+	@Override
 	public void onEpassportReaderOpen(Biometrics.ResultCode resultCode) {
-  }
+	}
 	
-  @Override
+	@Override
 	public void onEpassportReaderClosed(ResultCode resultCode,
 	                                    CloseReasonCode closeReasonCode) {
-  }
+	}
 }};
 
 registerEpassportCardStatusListener(new OnEpassportCardStatusListener() {
-  @Override
+	@Override
 	public void onEpassportCardStatusChange(int i, int i1) {
 				
 	}
 }};
 
 readICAODocument(String, String, String, new Biometrics.ICAODocumentReadListener() {
-  @Override
+	@Override
 	public void onICAODocumentRead(ResultCode resultCode, 
 	                               ICAOReadIntermediateCode icaoReadIntermediateCode, 
                                  String hint,
