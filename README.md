@@ -1,6 +1,6 @@
 # capp_SampleEPassport
 
-This application demonstrates usage of CredenceID EPassport APIs as well as ICAO document reading. It covers the basics
+This application demonstrates usage of CredenceID MRZ/EPassport APIs as well as ICAO document reading. It covers the basics
 of opening the reader, calling the ICAO reading API, and then closing the sensor.
 
 ```java
@@ -22,6 +22,42 @@ registerEpassportCardStatusListener(new OnEpassportCardStatusListener() {
 	}
 }};
 
+ePassportCloseCommand()
+```
+
+```java
+openMRZ(new MRZStatusListener() {
+	@Override
+	public void onMRZOpen(ResultCode resultCode) {
+	}
+	
+	@Override
+	public void onMRZClose(ResultCode resultCode,
+			       CloseReasonCode closeReasonCode) {
+	}
+});
+
+registerMrzDocumentStatusListener(new OnMrzDocumentStatusListener() {
+	@Override
+	public void onMrzDocumentStatusChange(int i, int i1) {
+				
+	}
+}};
+
+readMRZ(new OnMrzReadListener() {
+	@Override
+	public void onMrzRead(ResultCode resultCode,
+			      String hint,
+			      byte[] rawData,
+			      String data,
+			      String parsedData) {
+	}
+});
+
+closeMRZ()
+```
+
+```java
 readICAODocument(String, String, String, new Biometrics.ICAODocumentReadListener() {
 	@Override
 	public void onICAODocumentRead(ResultCode resultCode, 
@@ -30,8 +66,6 @@ readICAODocument(String, String, String, new Biometrics.ICAODocumentReadListener
                                  ICAODocumentData icaoDocumentData) {
   }
 }};
-
-ePassportCloseCommand()
 ```
 
 # Important For Developers
