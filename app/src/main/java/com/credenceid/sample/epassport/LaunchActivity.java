@@ -1,4 +1,4 @@
-package com.cid.sample.epassport;
+package com.credenceid.sample.epassport;
 
 import android.app.Activity;
 import android.content.Intent;

@@ -1,4 +1,4 @@
-package com.cid.sample.epassport;
+package com.credenceid.sample.epassport;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
