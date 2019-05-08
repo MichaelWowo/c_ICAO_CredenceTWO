@@ -1,5 +1,6 @@
 package com.credenceid.sample.epassport;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
@@ -423,6 +424,7 @@ public class MRZActivity
      * @param documentNumber Document number of ICAO document.
      * @param dateOfExpiry Date of expiry on ICAO document (YYMMDD format).
      */
+    @SuppressLint("SetTextI18n")
     @SuppressWarnings("SpellCheckingInspection")
     private void
     readICAODocument(String dateOfBirth,
