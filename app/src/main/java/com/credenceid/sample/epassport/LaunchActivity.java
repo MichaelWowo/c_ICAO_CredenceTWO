@@ -36,7 +36,7 @@ public class LaunchActivity
     /* --------------------------------------------------------------------------------------------
      *
      * Private helpers.
-     *
+     *1
      * --------------------------------------------------------------------------------------------
      */
 
@@ -64,7 +64,7 @@ public class LaunchActivity
                 this.finish();
 
             } else if (INTERMEDIATE == resultCode) {
-                /* This code is never returned here. */
+                /* This code is never returned for this API. */
 
             } else if (FAIL == resultCode) {
                 Toast.makeText(this, getString(R.string.biometrics_fail_init), LENGTH_LONG).show();

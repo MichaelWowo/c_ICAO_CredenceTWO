@@ -207,8 +207,8 @@ public class MRZActivity
     onBackPressed() {
 
         super.onBackPressed();
-        /* If back button is pressed when we want to destroy activity. */
-        this.onDestroy();
+        App.BioManager.ePassportCloseCommand();
+        App.BioManager.closeMRZ();
     }
 
     /* Invoked when application is killed, either by user or system. */
@@ -221,11 +221,6 @@ public class MRZActivity
         /* If user presses back button then close all open peripherals. */
         App.BioManager.ePassportCloseCommand();
         App.BioManager.closeMRZ();
-
-        /* If user presses back button then they are exiting application. If this is the case then
-         * tell C-Service to unbind from this application.
-         */
-        App.BioManager.finalizeBiometrics(false);
     }
 
     /* --------------------------------------------------------------------------------------------
@@ -275,9 +270,10 @@ public class MRZActivity
         });
 
         mReadICAOButton.setEnabled(false);
-        mReadICAOButton.setOnClickListener((View v) ->
-                this.readICAODocument(mDateOfBirth, mDocNumber, mDateOfExpiry)
-        );
+        mReadICAOButton.setOnClickListener((View v) -> {
+            mICAOImageView.setImageBitmap(null);
+            this.readICAODocument(mDateOfBirth, mDocNumber, mDateOfExpiry);
+        });
     }
 
     /* --------------------------------------------------------------------------------------------
@@ -344,7 +340,7 @@ public class MRZActivity
                     mOpenRFButton.setText(getString(R.string.open_epassport));
 
                 } else if (INTERMEDIATE == resultCode) {
-                    /* This code is never returned here. */
+                    /* This code is never returned for this API. */
 
                 } else if (FAIL == resultCode) {
                     mStatusTextView.setText(getString(R.string.mrz_failed_close));
@@ -409,7 +405,7 @@ public class MRZActivity
                     mStatusTextView.setText(getString(R.string.epassport_closed));
 
                 } else if (INTERMEDIATE == resultCode) {
-                    /* This code is never returned here. */
+                    /* This code is never returned for this API. */
 
                 } else if (FAIL == resultCode) {
                     mStatusTextView.setText(getString(R.string.mrz_failed_close));
