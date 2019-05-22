@@ -287,6 +287,7 @@ public class MRZActivity
     private void
     openMRZReader() {
 
+        mICAOImageView.setImageBitmap(null);
         mStatusTextView.setText(getString(R.string.mrz_opening));
 
         /* Register a listener that will be invoked each time MRZ reader's status changes. Meaning
