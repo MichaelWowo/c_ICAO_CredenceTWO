@@ -12,6 +12,10 @@ android {
 
     signingConfigs {
         debug {
+            keyAlias 'CredenceIDPublicKey'
+            keyPassword 'CredenceID'
+            storeFile file('../../CredencePublicKeys/PublicKey.jks')
+            storePassword 'CredenceID'
         }
         release {
             keyAlias 'CredenceIDPublicKey'

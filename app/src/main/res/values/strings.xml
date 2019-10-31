@@ -9,9 +9,10 @@
 	<string name="icao_done">Finished reading document.</string>
 
 	<string name="open_mrz">Open MRZ</string>
+	<string name="enter_mrz">Enter MRZ</string>
 	<string name="close_mrz">Close MRZ</string>
-	<string name="open_epassport">Open EPassport</string>
-	<string name="close_epassport">Close EPassport</string>
+	<string name="open_epassport">Open RF reader</string>
+	<string name="close_epassport">Close RF reader</string>
 	<string name="read_icao_button_label">Read ICAO</string>
 
 	<string name="mrz_opening">Opening MRZ sensor…</string>
@@ -24,6 +25,12 @@
 	<string name="epassport_open_failed">Failed to open EPassport reader.</string>
 	<string name="epassport_opened">EPassport reader is open.</string>
 	<string name="epassport_closed">EPassport Reader is closed.</string>
+
+	<string name="rf_reader_opening">Opening RFID reader…</string>
+	<string name="rf_reader_open_failed">Failed to open RFID reader.</string>
+	<string name="rf_reader_opened">RFID reader is open.</string>
+	<string name="rf_reader_closed">RFID Reader is closed.</string>
+	<string name="rf_reader_failed_close">RFID Reader failed to close.</string>
 
 	<string name="mrz_failed_reswipe">Failed to read MRZ, please re-swipe document.</string>
 	<string name="mrz_reading_wait">Reading MRZ, please wait…</string>

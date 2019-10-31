@@ -2,10 +2,16 @@ package com.credenceid.sample.epassport;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,12 +23,14 @@ import com.credenceid.biometrics.Biometrics.OnEPassportStatusListener;
 import com.credenceid.biometrics.Biometrics.OnMRZDocumentStatusListener;
 import com.credenceid.biometrics.Biometrics.OnMRZReaderListener;
 import com.credenceid.biometrics.Biometrics.ResultCode;
+import com.credenceid.biometrics.DeviceType;
 import com.credenceid.icao.ICAODocumentData;
 import com.credenceid.icao.ICAOReadIntermediateCode;
 
 import static com.credenceid.biometrics.Biometrics.ResultCode.FAIL;
 import static com.credenceid.biometrics.Biometrics.ResultCode.INTERMEDIATE;
 import static com.credenceid.biometrics.Biometrics.ResultCode.OK;
+import static java.security.AccessController.getContext;
 
 @SuppressWarnings({"unused", "StatementWithEmptyBody"})
 public class MRZActivity
@@ -55,6 +63,12 @@ public class MRZActivity
      */
     private final int mMRZ_DATA_COUNT = 10;
 
+    // RFID reader return
+    private static final int mEMPTY_STRING_LEN = 0;
+    private static final int mREAD_SPECIAL_APDU_LEN = 10;
+    private static final int CARD_ABSENT = 1;
+    private static final int CARD_PRESENT = 2;
+
     /* --------------------------------------------------------------------------------------------
      *
      * Components in layout file.
@@ -65,6 +79,7 @@ public class MRZActivity
     private ImageView mICAOImageView;
     private TextView mICAOTextView;
     private Button mOpenMRZButton;
+    private Button mEnterMRZButton;
     private Button mOpenRFButton;
     /* This button should only be enabled if three conditions are all met.
      * 1. EPassport is open.
@@ -78,6 +93,7 @@ public class MRZActivity
      */
     private boolean mIsMRZOpen = false;
     private boolean mIsEPassportOpen = false;
+    private boolean mIsRFReaderOpen = false;
     private boolean mHasMRZData = false;
     private boolean mIsDocPresentOnEPassport = false;
 
@@ -183,6 +199,25 @@ public class MRZActivity
         }
     };
 
+    /* Callback invoked each time sensor detects a card change. */
+    private Biometrics.OnCardStatusListener onCardStatusListener = (String ATR,
+                                                                    int prevState,
+                                                                    int currentState) -> {
+        /* If currentState is 1, then no card is present. */
+        if (CARD_ABSENT == currentState) {
+            mIsDocPresentOnEPassport = false;
+            Log.d(TAG, "No Card detected!");
+        } else {
+            mIsDocPresentOnEPassport = true;
+            Log.d(TAG, "Card detcetion OK");
+        }
+
+        /* currentStates [2, 6] represent a card present. If a card is present code will reach.
+         * Here you may perform any operations you want ran automatically when a card is detected.
+         */
+    };
+
+
     /* --------------------------------------------------------------------------------------------
      *
      * Android activity lifecycle event methods.
@@ -240,7 +275,8 @@ public class MRZActivity
         mICAOTextView = findViewById(R.id.icao_textview);
 
         mOpenMRZButton = findViewById(R.id.open_mrz_button);
-        mOpenRFButton = findViewById(R.id.open_epassport_buton);
+        mEnterMRZButton = findViewById(R.id.enter_mrz_button);
+        mOpenRFButton = findViewById(R.id.open_rf_reader_buton);
         mReadICAOButton = findViewById(R.id.read_icao_button);
     }
 
@@ -248,32 +284,58 @@ public class MRZActivity
     private void
     configureLayoutComponents() {
 
-        mOpenMRZButton.setEnabled(true);
-        mOpenMRZButton.setText(getString(R.string.open_mrz));
-        mOpenMRZButton.setOnClickListener((View v) -> {
-            /* Based on current state of MRZ reader take appropriate action. */
-            if (!mIsMRZOpen)
-                openMRZReader();
-            else {
-                App.BioManager.closeMRZ();
-                App.BioManager.ePassportCloseCommand();
-            }
-        });
+        if((App.DevType != DeviceType.CredenceTwoV1_F)
+            &&(App.DevType != DeviceType.CredenceTwoV2_FC)) {
+            mEnterMRZButton.setEnabled(false);
+            mOpenMRZButton.setEnabled(true);
+            mOpenMRZButton.setText(getString(R.string.open_mrz));
+            mOpenMRZButton.setOnClickListener((View v) -> {
+                /* Based on current state of MRZ reader take appropriate action. */
+                if (!mIsMRZOpen)
+                    openMRZReader();
+                else {
+                    App.BioManager.closeMRZ();
+                    App.BioManager.ePassportCloseCommand();
+                }
+            });
 
-        mOpenRFButton.setEnabled(false);
-        mOpenRFButton.setText(getString(R.string.open_epassport));
-        mOpenRFButton.setOnClickListener((View v) -> {
-            /* Based on current state of EPassport reader take appropriate action. */
-            if (!mIsEPassportOpen)
-                openEPassportReader();
-            else App.BioManager.ePassportCloseCommand();
-        });
+            mOpenRFButton.setEnabled(false);
+            mOpenRFButton.setText(getString(R.string.open_epassport));
+            mOpenRFButton.setOnClickListener((View v) -> {
+                /* Based on current state of EPassport reader take appropriate action. */
+                if (!mIsEPassportOpen)
+                    openEPassportReader();
+                else App.BioManager.ePassportCloseCommand();
+            });
 
-        mReadICAOButton.setEnabled(false);
-        mReadICAOButton.setOnClickListener((View v) -> {
-            mICAOImageView.setImageBitmap(null);
-            this.readICAODocument(mDateOfBirth, mDocNumber, mDateOfExpiry);
-        });
+            mReadICAOButton.setEnabled(false);
+            mReadICAOButton.setOnClickListener((View v) -> {
+                mICAOImageView.setImageBitmap(null);
+                this.readICAODocument(mDateOfBirth, mDocNumber, mDateOfExpiry);
+            });
+        } else {
+                mOpenMRZButton.setEnabled(false);
+                mEnterMRZButton.setEnabled(true);
+                mEnterMRZButton.setOnClickListener((View v) -> {
+                    displayMrzDialogBox();
+                });
+
+
+                mOpenRFButton.setEnabled(true);
+                mOpenRFButton.setText(getString(R.string.open_epassport));
+                mOpenRFButton.setOnClickListener((View v) -> {
+                    /* Based on current state of EPassport reader take appropriate action. */
+                    if (!mIsRFReaderOpen)
+                        openCardReader();
+                    else App.BioManager.cardCloseCommand();
+                });
+
+                mReadICAOButton.setEnabled(false);
+                mReadICAOButton.setOnClickListener((View v) -> {
+                    mICAOImageView.setImageBitmap(null);
+                    this.readICAODocument(mDateOfBirth, mDocNumber, mDateOfExpiry);
+                });
+        }
     }
 
     /* --------------------------------------------------------------------------------------------
@@ -415,6 +477,81 @@ public class MRZActivity
         });
     }
 
+    private void
+    openCardReader() {
+
+        /* Let user know card reader will now try to be opened. */
+        mStatusTextView.setText(getString(R.string.rf_reader_opening));
+
+        App.BioManager.cardOpenCommand(new Biometrics.CardReaderStatusListener() {
+            @Override
+            public void
+            onCardReaderOpen(ResultCode resultCode) {
+
+                Log.d(TAG, "onCardReaderOpen - resultCode =  " + resultCode);
+
+                if (OK == resultCode) {
+                    mOpenRFButton.setEnabled(true);
+
+                    mIsRFReaderOpen = true;
+
+                    mStatusTextView.setText(getString(R.string.rf_reader_opened));
+                    mOpenRFButton.setText(getString(R.string.close_epassport));
+
+                    setIcaoReadEnable(true);
+
+                    /* If card reader opened successfully, register a listener will be invoked each time
+                     * card reader's status changes. Meaning that anytime a card is placed/removed
+                     * invoke this callback.
+                     */
+                    App.BioManager.registerCardStatusListener(onCardStatusListener);
+
+                } else if (INTERMEDIATE == resultCode) {
+                    /* This code is never returned here. */
+
+                } else if (FAIL == resultCode) {
+                    mOpenRFButton.setEnabled(true);
+                    mStatusTextView.setText(getString(R.string.rf_reader_open_failed));
+                }
+            }
+
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void
+            onCardReaderClosed(ResultCode resultCode,
+                               CloseReasonCode closeReasonCode) {
+
+                Log.d(TAG, "onCardReaderClosed - resultCode = " + resultCode);
+                Log.d(TAG, "onCardReaderClosed - closeReasonCode = " + closeReasonCode.name());
+
+                mOpenRFButton.setEnabled(true);
+
+                if (OK == resultCode) {
+                    mIsRFReaderOpen = false;
+
+                    mStatusTextView.setText(
+                            getString(R.string.rf_reader_closed) + closeReasonCode.name());
+                    mStatusTextView.setText("");
+                    mOpenRFButton.setText(getString(R.string.open_epassport));
+
+                    setIcaoReadEnable(false);
+
+                } else if (INTERMEDIATE == resultCode) {
+                    /* This code is never returned here. */
+
+                } else if (FAIL == resultCode) {
+                    mStatusTextView.setText(getString(R.string.rf_reader_failed_close));
+                }
+            }
+        });
+    }
+
+    private void
+    setIcaoReadEnable(boolean enabled) {
+
+        mReadICAOButton.setEnabled(enabled);
+    }
+
     /* Calls Credence APIs to read an ICAO document.
      *
      * @param dateOfBirth Date of birth on ICAO document (YYMMDD format).
@@ -441,6 +578,10 @@ public class MRZActivity
             Log.w(TAG, "DateOfExpiry parameter INVALID, will not read ICAO document.");
             return;
         }
+
+        Log.d(TAG, "DateOfBirth = " + mDateOfBirth);
+        Log.d(TAG, "DocNumber = " + mDocNumber);
+        Log.d(TAG, "DateOfExpiry = " + mDateOfExpiry);
 
         /* Disable button so user does not initialize another readICAO document API call. */
         mReadICAOButton.setEnabled(false);
@@ -517,4 +658,39 @@ public class MRZActivity
                     }
                 });
     }
+
+    void displayMrzDialogBox(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Passport Info");
+
+        // Set up the input
+        View passportInfoView = LayoutInflater.from(this).inflate(R.layout.passport_info_layout, null);
+        EditText etDateOfBirth = passportInfoView.findViewById(R.id.dateOfBirthInput);
+        EditText etDocumentNumber = passportInfoView.findViewById(R.id.documentNumberInput);
+        EditText etDateOfExpiry = passportInfoView.findViewById(R.id.dateOfExpiryInput);
+        etDateOfBirth.setText("741021");
+        etDocumentNumber.setText("106197410");
+        etDateOfExpiry.setText("270707");
+
+        builder.setView(passportInfoView);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mDateOfBirth = etDateOfBirth.getText().toString();
+                mDocNumber = etDocumentNumber.getText().toString();
+                mDateOfExpiry = etDateOfExpiry.getText().toString();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();}
 }

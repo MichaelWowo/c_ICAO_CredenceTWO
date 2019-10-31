@@ -63,15 +63,26 @@
 		android:layout_marginTop="25dp"
 		android:orientation="horizontal">
 
-		<View
-			android:layout_width="0dp"
-			android:layout_height="0dp"
-			android:layout_weight="1" />
-
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:layout_marginLeft="25dp"
+			android:orientation="vertical">
 		<Button
 			android:id="@+id/open_mrz_button"
+			android:layout_width="wrap_content"
 			style="@style/MRZActivityButton"
 			android:text="@string/open_mrz" />
+
+		<Button
+			android:id="@+id/enter_mrz_button"
+			style="@style/MRZActivityButton"
+			android:layout_width="wrap_content"
+			android:layout_marginTop="5dp"
+			android:text="@string/enter_mrz" />
+
+		</LinearLayout>
+
 
 		<View
 			android:layout_width="0dp"
@@ -89,7 +100,7 @@
 			android:layout_weight="1" />
 
 		<Button
-			android:id="@+id/open_epassport_buton"
+			android:id="@+id/open_rf_reader_buton"
 			style="@style/MRZActivityButton"
 			android:text="@string/open_epassport" />
 
